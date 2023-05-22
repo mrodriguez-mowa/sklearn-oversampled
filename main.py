@@ -7,7 +7,7 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello, World!'
 
-@app.route('/predict', methods=['POST'])
+@app.route('/api/trained-model', methods=['POST'])
 def predict():
     vectorizer = joblib.load('vectorizer.joblib')
     model = joblib.load('model.joblib')
@@ -16,14 +16,13 @@ def predict():
     response = []
 
     for element in body:
-        message = element['message']
+        message = element['textMessage']
         X = vectorizer.transform([message.lower()])
         y_pred = model.predict(X)
-        response.append({
-            'message': message,
-            'label': y_pred[0]
-        })
-    
+        element['qualification'] = y_pred[0]
+        element['model'] = 'Sklearn'
+        response.append(element)
+
     return jsonify(response)
 
 
